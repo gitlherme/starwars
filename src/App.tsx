@@ -1,12 +1,27 @@
-import { useState } from 'react'
-import { genericController } from './api/generic-api';
-
+import { useEffect, useState } from 'react'
+import { genericController, PageableResponse, PageData } from './api/generic-api';
+import React from 'react';
+import { People } from './api/schemas/people';
 
 export const App = () => {
-  const [schema, setSchema] = useState({ description: '' });
-  const { getSchema } = genericController('people')
-  getSchema().then(valor => setSchema(valor))
-  return (
-    <div>{schema.description}</div>
-  )
+  const { getAll } = genericController<People>('people')
+  const [people, setPeople] = useState<People[]>();
+  const [page, setPage] = useState<PageData>();
+  useEffect(() => {
+    getAll(1).then(value => {
+      setPeople(value.data);
+      setPage(value.page);
+    })
+  }, [])
+
+  if (people) {
+    return(
+      <>
+      <div>Paginação anterior: {page?.previous} - Próximo: {page?.next}</div>
+      {people.map(person=><div>{person.name}</div>)}
+      </>
+    )
+  } else {
+    return (<div></div>)
+  }
 }
